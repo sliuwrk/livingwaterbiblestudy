@@ -1,0 +1,18 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Solid background -->
+  <rect width="64" height="64" fill="#1E3A8A" rx="8" />
+
+  <!-- Cross -->
+  <g transform="translate(32, 16)" fill="#FFFFFF">
+    <rect x="-4" y="0" width="8" height="32" rx="2" />
+    <rect x="-16" y="8" width="32" height="8" rx="2" />
+  </g>
+
+  <!-- Waves -->
+  <g transform="translate(0, 20)">
+    <path d="M4 32c6 0 9-6 15-6s9 6 15 6 9-6 15-6 9 6 15 6"
+          stroke="#FFFFFF" stroke-width="3" fill="none" />
+    <path d="M4 24c6 0 9-6 15-6s9 6 15 6 9-6 15-6 9 6 15 6"
+          stroke="#FFFFFF" stroke-width="3" fill="none" />
+  </g>
+</svg>
