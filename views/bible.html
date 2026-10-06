@@ -1,0 +1,46 @@
+<section name="view-title">
+    <div>Bible</div>
+</section>
+<section name="view-menu">
+    <div class="btn-group btn-group-sm">
+        <!-- Version Selector -->
+        <div class="btn-group">
+            <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <span id="currentVersionLabel">和合本</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" data-label="和合本" data-version="unv">和合本</a></li>
+                <li><a class="dropdown-item" data-label="ESV" data-version="esv">ESV</a></li>
+                <li><a class="dropdown-item" data-label="KJV" data-version="kjv">KJV</a></li>
+                <li><a class="dropdown-item" data-label="环球译本" data-version="wcb">环球译本</a></li>
+                <li><a class="dropdown-item" data-label="思高译本" data-version="ofm">思高译本</a></li>
+                <li><a class="dropdown-item" data-label="和合本2010" data-version="rcuv">和合本2010</a></li>
+                <li><a class="dropdown-item" data-label="现代中文译本2019" data-version="tcv2019">现代中文译本2019</a></li>
+            </ul>
+        </div>
+        <!-- Strong Toggle -->
+        <button id="toggle-strong" class="btn btn-outline-secondary" type="button">
+            <i class="fa-solid fa-hashtag"></i> 编号
+        </button>
+        <button id="toggle-compare" class="btn btn-outline-secondary" type="button">
+            <i class="fa-solid fa-layer-group"></i> 对照
+        </button>
+        <button id="play-chapter" class="btn btn-sm btn-outline-secondary">
+            <i class="fa-solid fa-play"></i> 播放
+        </button>
+    </div>
+</section>
+<section name="view-body">
+    <div id="verse-box" class="row mb-3 hide-strong"></div>
+    <div class="row mb-3"><audio id="audio-player" controls></audio></div>
+    <div class="d-flex justify-content-end mb-3">
+        <div class="btn-group btn-group-sm">
+            <button id="prev-chapter" class="btn btn-outline-secondary" type="button">
+                上一章
+            </button>
+            <button id="next-chapter" class="btn btn-outline-secondary" type="button">
+                下一章
+            </button>
+        </div>
+    </div>
+</section>
