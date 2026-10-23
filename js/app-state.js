@@ -12,7 +12,7 @@ export const appState = {
     version: "unv",
 
     searchHistory: [],
-    currentHighlightColor: 'stress',
+    currentHighlightColor: 'reverse',
 
     pinnedBook: null,
     pinnedChapter: null,

@@ -475,6 +475,7 @@ function renderHighlightSelector() {
 }
 
 renderHighlightSelector();
+selectHighlightColor(appState.currentHighlightColor);
 await createLogo();
 
 // events
