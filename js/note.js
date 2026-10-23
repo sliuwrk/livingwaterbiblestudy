@@ -8,10 +8,12 @@ import { bibleBooks } from "./bible-books.js";
 const { viewBody } = dom;
 
 const _noteCache = {};
+const emptyNote = '<p class="text-muted">暂无笔记。</p>';
 
 let _viewEventBound = false;
 let viewContainer = null;
 let view = null;
+let activeTab = "background";
 
 // ============================
 // ENTRY
@@ -22,12 +24,8 @@ function initNoteView(container) {
     }
 
     view = getDom();
-    const { book, chapter } = getNoteInfo();
 
-    setViewTitle(`
-        查经资料
-        <small>${book.name} 第 ${chapter} 章</small>
-    `);
+    updateNoteTitle();
 
     renderBoxNotes();
     updatePinButton();
@@ -37,8 +35,20 @@ function initNoteView(container) {
 function getDom() {
     return {
         notesContainer: viewBody,
-        pinButton: viewContainer.querySelector("#toggle-pin")
+        pinButton: viewContainer.querySelector("#toggle-pin"),
+        tabs: Array.from(document.querySelectorAll("#note-tabs [data-note-tab]"))
     };
+}
+
+function showNoteFor(book, chapter) {
+    setCurrentBook(book, chapter);
+
+    // a pinned note stays on screen
+    if (appState.pinnedBook !== null) return;
+
+    updateNoteTitle();
+    renderBoxNotes();
+    window.scrollTo({ top: 0 });
 }
 
 // ============================
@@ -49,9 +59,7 @@ function renderBoxNotes() {
     const key = `${book.ename}-${chapter}`;
 
     if (_noteCache[key]) {
-        view.notesContainer.innerHTML = _noteCache[key];
-        createCardForTable();
-        updateXrefs();
+        showNotes(_noteCache[key]);
         return;
     }
 
@@ -64,22 +72,61 @@ function fetchNotes(ename, chapter, key) {
     fetch(page, { cache: 'no-store'})
         .then(r => r.ok ? r.text() : Promise.reject("NOT_FOUND"))
         .then(html => {
-            const parsedHtml = parseCrossRefs(html);
-            view.notesContainer.innerHTML = parsedHtml;
-            createCardForTable();
-            updateXrefs();
-            _noteCache[key] = view.notesContainer.innerHTML;
+            _noteCache[key] = parseCrossRefs(html);
+            showNotes(_noteCache[key]);
         })
         .catch(() => {
-            const empty = '<p class="text-muted">暂无笔记。</p>';
-            _noteCache[key] = empty;
-            view.notesContainer.innerHTML = empty;
+            _noteCache[key] = emptyNote;
+            showNotes(emptyNote);
         });
+}
+
+function showNotes(html) {
+    view.notesContainer.innerHTML = html;
+    createCardForTable();
+    updateXrefs();
+    showTab(activeTab);
+}
+
+// ============================
+// TABS
+// ============================
+function getSections() {
+    return Array.from(view.notesContainer.querySelectorAll("section[data-note-tab]"));
+}
+
+function showTab(tab) {
+    const sections = getSections();
+    const available = new Set(sections.map(s => s.dataset.noteTab));
+
+    // Fall back to the first tab that has content in this chapter
+    if (!available.has(tab)) {
+        const firstAvailable = view.tabs.find(t => available.has(t.dataset.noteTab));
+        if (firstAvailable) tab = firstAvailable.dataset.noteTab;
+    }
+
+    sections.forEach(s => {
+        s.hidden = s.dataset.noteTab !== tab;
+    });
+
+    view.tabs.forEach(t => {
+        const name = t.dataset.noteTab;
+        const isActive = name === tab && available.has(name);
+        t.classList.toggle("active", isActive);
+        t.classList.toggle("disabled", !available.has(name));
+        t.setAttribute("aria-selected", String(isActive));
+    });
 }
 
 //
 // constrol state
 //
+function updateNoteTitle() {
+    const { book, chapter } = getNoteInfo();
+    // the "查经资料" prefix is hidden on small screens to leave room for the pills
+    setViewTitle(`<span class="d-none d-md-inline">查经资料 </span><small>${book.name} 第 ${chapter} 章</small>`);
+}
+
 function updatePinButton() {
     view.pinButton.innerHTML = appState.pinnedBook === null
         ? `<i class="fa-solid fa-thumbtack"></i> 设为固定`
@@ -94,17 +141,22 @@ function registerNotesEvents() {
         _viewEventBound = true;
 
         viewContainer.addEventListener("click", (e) => {
+            const tab = e.target.closest("#note-tabs [data-note-tab]");
+            if (tab) {
+                if (tab.classList.contains("disabled")) return;
+                activeTab = tab.dataset.noteTab;
+                showTab(activeTab);
+                window.scrollTo({ top: 0 });
+                return;
+            }
+
             if (!e.target.closest("#toggle-pin")) return;
             togglePin();
             updatePinButton();
-            const { book, chapter } = getNoteInfo();
-            setViewTitle(`
-                查经资料
-                <small>${book.name} 第 ${chapter} 章</small>
-            `);
+            updateNoteTitle();
             renderBoxNotes();
         });
     }
 }
 
-export { initNoteView }
+export { initNoteView, showNoteFor }

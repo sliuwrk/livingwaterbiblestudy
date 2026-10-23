@@ -1,0 +1,138 @@
+:root {
+    --app-navbar-height: 70px;
+}
+
+#app-header {
+    display: flow-root;
+    position: sticky;
+    top: 0;
+    z-index: 1040;
+    flex-shrink: 0;
+    background-color: var(--bs-body-bg);
+}
+
+body {
+    height: auto;
+    min-height: 100vh;
+    padding-top: 0;
+}
+
+.app-navbar {
+    position: relative;
+    flex-shrink: 0;
+    margin-bottom: 0;
+    transition: margin-top .2s ease-in-out;
+}
+
+body.app-navbar-hidden .app-navbar {
+    margin-top: calc(-1 * var(--app-navbar-height));
+}
+
+.app-navbar .navbar-brand {
+    cursor: pointer;
+}
+
+#content-navbar {
+    padding: .5rem 1.5rem;
+    background-color: var(--bs-body-bg);
+}
+
+#sidebar-col {
+    top: var(--app-header-height, 70px);
+    height: calc(100vh - var(--app-header-height, 70px));
+}
+
+@media (max-width: 767.98px) {
+    :root {
+        --app-navbar-height: 56px;
+    }
+
+    #sidebar-col {
+        top: var(--app-header-height, 56px);
+        height: auto;
+    }
+}
+
+/* Single-row content navbar: the title is sized to match the button group */
+#content-navbar {
+    padding-top: .25rem;
+    padding-bottom: .25rem;
+}
+
+#view-title {
+    cursor: pointer;
+    user-select: none;
+    flex: 1 1 auto;
+    align-self: stretch; /* same height as the button group */
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0;
+}
+
+#view-title > * {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#view-title small {
+    display: inline;
+    font-size: .85em;
+    letter-spacing: 0;
+}
+
+#view-menu {
+    flex: 0 0 auto;
+}
+
+#view-menu .btn {
+    white-space: nowrap;
+}
+
+/* 资料 view pills: same height as btn-sm */
+#note-tabs {
+    gap: .25rem;
+}
+
+#note-tabs .nav-link {
+    padding: .25rem .6rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+#note-tabs .nav-link.disabled {
+    opacity: .4;
+}
+
+@media (max-width: 767.98px) {
+    #content-navbar {
+        padding-left: .75rem;
+        padding-right: .75rem;
+    }
+
+    #note-tabs {
+        gap: 0;
+    }
+
+    #note-tabs .nav-link {
+        padding-left: .4rem;
+        padding-right: .4rem;
+    }
+
+    /* icon-only buttons; text-only buttons (e.g. version dropdown) keep their label */
+    #view-menu .btn:has(> i) {
+        font-size: 0;
+    }
+
+    #view-menu .btn > i {
+        font-size: .875rem;
+        line-height: 1.5;
+    }
+}

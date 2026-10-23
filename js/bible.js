@@ -4,7 +4,7 @@ import {
     setBackward, isBackward, pushStateBibleView,
     getVerseRange, getXrefs
 } from "./app-state.js";
-import { setPageTitle, setViewTitle, convertFhlTags, parseCrossRefs, HIGHLIGHTS } from "./dom-helpers.js";
+import { setViewTitle, convertFhlTags, parseCrossRefs, HIGHLIGHTS } from "./dom-helpers.js";
 import { loadHighlights } from "./store.js";
 import { getBiblePlayer } from "./bible-player.js";
 
@@ -32,9 +32,8 @@ function initBibleView(container) {
 function getDom() {
     return {
         verseBox: _viewContainer.querySelector("#verse-box"),
-        toggleStrong: _viewContainer.querySelector("#toggle-strong"),
-        toggleCompare: _viewContainer.querySelector("#toggle-compare"),
-        versionLabel: _viewContainer.querySelector("#currentVersionLabel"),
+        toggleStrong: document.getElementById("toggle-strong"),
+        versionLabel: document.getElementById("currentVersionLabel"),
         audioPlayer: _viewContainer.querySelector("#audio-player")
     };
 }
@@ -60,16 +59,7 @@ function fetchChapter(cname, chapter) {
     setViewTitle(`<span>${appState.currentBook.name}</span> <small>第 ${chapter} 章</small>`);
     view.verseBox.innerHTML = `<p>加载中...</p>`;
 
-    if (isCompareMode()) {
-        fetchCompareChapter(cname, chapter);
-        return;
-    }
-
     fetchSingleChapter(cname, chapter);
-}
-
-function isCompareMode() {
-    return appState.bibleViewSettings.mode === "compare";
 }
 
 function getCompareVersions() {
@@ -128,25 +118,6 @@ function fetchSingleChapter(cname, chapter) {
         });
 }
 
-function fetchCompareChapter(cname, chapter) {
-    const book = booksByCname[cname];
-    const versions = getCompareVersions();
-
-    Promise.all(
-        versions.map(version =>
-            fetchVersionRecords(book, cname, chapter, version)
-                .then(records => ({ version, records }))
-        )
-    )
-        .then(results => {
-            renderCompareVerses(results);
-            finalizeChapterRender();
-        })
-        .catch(() => {
-            view.verseBox.innerHTML = `<p>加载失败</p>`;
-        });
-}
-
 function bindAudioButton() {
     const audioEl = document.getElementById("audio-player");   // optional
     const btn = document.getElementById("play-chapter");       // required
@@ -172,50 +143,8 @@ function renderVerses(records) {
     restoreHighlights();
 }
 
-function renderCompareVerses(versionRecords) {
-    const maxVerse = versionRecords.reduce((max, item) => {
-        const itemMax = item.records.reduce((m, r) => Math.max(m, Number(r.sec)), 0);
-        return Math.max(max, itemMax);
-    }, 0);
-
-    const html = [];
-
-    for (let verse = 1; verse <= maxVerse; verse++) {
-        const lines = versionRecords.map(item => {
-            const row = item.records.find(r => Number(r.sec) === verse);
-            if (!row) {
-                return "";
-            }
-
-            const verLabel = appState.bibleViewSettings.showVersionAbbrInCompare
-                ? `<a class="small text-secondary fw-semibold me-2 compare-version-link" data-compare-version="${item.version}">${item.version.toUpperCase()}</a>`
-                : "";
-
-            return `
-                <div class="verse-row gap-2 mb-1" data-v="${verse}" data-version="${item.version}">
-                    <span class="text-nowrap">${verLabel}<sup class="verse-num" data-v="${verse}">${verse}</sup></span>
-                    <span>${parseCrossRefs(convertFhlTags(row.bible_text))}</span>
-                </div>
-            `;
-        }).join("");
-
-        html.push(`<div class="verse-stack py-2 border-top" data-v="${verse}">${lines}</div>`);
-    }
-
-    view.verseBox.innerHTML = html.join("");
-    restoreHighlights();
-}
-
 function getVerseRows(verse) {
     return Array.from(view.verseBox.querySelectorAll(`.verse-row[data-v="${verse}"]`));
-}
-
-function getVerseStacks(verse) {
-    return Array.from(view.verseBox.querySelectorAll(`.verse-stack[data-v="${verse}"]`));
-}
-
-function getVerseTargets(verse) {
-    return [...getVerseRows(verse), ...getVerseStacks(verse)];
 }
 
 function restoreHighlights() {
@@ -268,8 +197,7 @@ function restoreHighlights() {
 function updateLabels() {
     view.versionLabel.textContent = bibleVersions[appState.version.toUpperCase()];
 
-    const isCompare = isCompareMode();
-    const canUseStrong = appState.version === "unv" && !isCompare;
+    const canUseStrong = appState.version === "unv";
 
     if (canUseStrong) {
         view.audioPlayer.classList.remove("d-none");
@@ -284,8 +212,6 @@ function updateLabels() {
         : false;
 
     view.verseBox.classList.toggle("hide-strong", !appState.bibleViewSettings.showStrongNumbers);
-
-    view.toggleCompare.classList.toggle("active", isCompare);
 }
 
 // ============================
@@ -300,7 +226,6 @@ function changeChapter(offset) {
     setCurrentBook(book, next);
     updateLabels();
     renderChapter();
-    setPageTitle(`${appState.currentBook.name} ${appState.currentChapter}`);
 }
 
 function toggleHighlight(el) {
@@ -356,6 +281,57 @@ function toggleHighlight(el) {
     }));
 }
 
+function toggleInlineCompare(verseNum) {
+    const row = verseNum.closest(".verse-row");
+    if (!row) return;
+
+    const existing = row.nextElementSibling;
+    if (existing?.classList.contains("verse-inline-compare")) {
+        existing.remove();
+        return;
+    }
+
+    const verse = Number(row.dataset.v);
+    const chapter = appState.currentChapter;
+    const cname = appState.currentBook.cname;
+    const book = booksByCname[cname];
+    const others = getCompareVersions().filter(v => v !== appState.version);
+    const versions = others.length ? others : getCompareVersions();
+
+    const panel = document.createElement("div");
+    panel.className = "verse-inline-compare small border-start border-2 ps-3 py-1 mb-2 ms-2";
+    panel.dataset.v = verse;
+    panel.innerHTML = `<p class="mb-0 text-body-secondary">加载中...</p>`;
+    row.after(panel);
+
+    Promise.all(
+        versions.map(version =>
+            fetchVersionRecords(book, cname, chapter, version)
+                .then(records => ({ version, row: records.find(r => Number(r.sec) === verse) }))
+        )
+    )
+        .then(results => {
+            panel.innerHTML = results
+                .filter(item => item.row)
+                .map(item => `
+                    <div class="mb-1">
+                        <a class="small text-secondary fw-semibold me-2 compare-version-link" data-compare-version="${item.version}">${item.version.toUpperCase()}</a>
+                        <span>${parseCrossRefs(convertFhlTags(item.row.bible_text))}</span>
+                    </div>
+                `).join("") || `<p class="mb-0 text-body-secondary">无对照经文</p>`;
+        })
+        .catch(() => {
+            panel.innerHTML = `<p class="mb-0 text-body-secondary">加载失败</p>`;
+        });
+}
+
+function handleVerseClick(row) {
+    // Don't highlight when the user is selecting text
+    if (String(window.getSelection?.() || "").trim()) return;
+
+    toggleHighlight(row);
+}
+
 function scrollToCurrentVerse() {
     requestAnimationFrame(() => {
         const verse = appState.currentVerse || 1;
@@ -400,11 +376,10 @@ function registerEvents() {
                 return;
             }
 
-            // COMPARE VERSION CLICK -> switch to single mode + selected version
+            // COMPARE VERSION CLICK -> switch to the selected version
             target = clickTarget.closest("[data-compare-version]");
             if (target) {
                 appState.version = target.dataset.compareVersion;
-                appState.bibleViewSettings.mode = "single";
                 updateLabels();
                 renderChapter();
                 return;
@@ -419,10 +394,17 @@ function registerEvents() {
                 return;
             }
 
-            // VERSE HIGHLIGHT
+            // VERSE NUMBER -> show this verse in the compare versions
             target = clickTarget.closest(".verse-num");
             if (target) {
-                toggleHighlight(target);
+                toggleInlineCompare(target);
+                return;
+            }
+
+            // CLICK INSIDE VERSE -> highlight
+            target = clickTarget.closest(".verse-row");
+            if (target && view.verseBox.contains(target) && !clickTarget.closest("a")) {
+                handleVerseClick(target);
                 return;
             }
             
@@ -442,14 +424,6 @@ function registerEvents() {
             if (clickTarget.closest("#toggle-strong")) {
                 appState.bibleViewSettings.showStrongNumbers = !appState.bibleViewSettings.showStrongNumbers;
                 view.verseBox.classList.toggle("hide-strong", !appState.bibleViewSettings.showStrongNumbers);
-                return;
-            }
-
-            // COMPARE TOGGLE
-            if (clickTarget.closest("#toggle-compare")) {
-                appState.bibleViewSettings.mode = isCompareMode() ? "single" : "compare";
-                updateLabels();
-                renderChapter();
                 return;
             }
         });

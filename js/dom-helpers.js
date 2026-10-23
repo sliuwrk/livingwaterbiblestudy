@@ -3,10 +3,10 @@ import { bibleBooks, booksByCname } from "./bible-books.js";
 import { appState, getXrefs  } from "./app-state.js"
 
 export const dom = {
-    brandText: document.getElementById("brand-text"),
-    caption: document.getElementById("brand-caption"),
     sidebar: document.getElementById("sidebar-col"),
     viewContainer: document.getElementById("content-col"),
+    // view menus live in #app-header, outside #content-col
+    viewRoot: document.body,
     viewBody: document.getElementById("view-body"),
     viewTitle: document.getElementById("view-title"),
     viewMenu: document.getElementById("view-menu"),
@@ -429,27 +429,12 @@ export function updateResponsiveTables() {
 }
 
 // logo helpers
-export function setPageTitle(text = null) {
-    if (text) {
-        dom.caption.textContent = text;
-        dom.caption.setAttribute("visibility", "visible");
-        dom.brandText.setAttribute("visibility", "hidden");
-    }
-    else {
-        dom.caption.setAttribute("visibility", "hidden");
-        dom.brandText.setAttribute("visibility", "visible");
-    }
-}
-
 export async function createLogo() {
     const svg = await fetch('/img/logo.svg')
         .then(r => r.text());
 
     const logoContainer = document.querySelector(".navbar-brand");
     logoContainer.innerHTML = svg;
-
-    dom.brandText = document.getElementById("brand-text");
-    dom.caption = document.getElementById("brand-caption");
 }
 
 // current highlight color

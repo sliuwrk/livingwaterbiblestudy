@@ -1,15 +1,15 @@
 // site.js (ES Module)
 
 import { bibleBooks, bookSections, sectionTitles } from "./bible-books.js";
-import { dom, setPageTitle, selectHighlightColor, HIGHLIGHTS } from "./dom-helpers.js";
+import { dom, selectHighlightColor, HIGHLIGHTS } from "./dom-helpers.js";
 import { appState, addSearch, setCurrentBook, loadSavedBook, popBibleView, getNoteInfo } from "./app-state.js";
 import { initBibleView } from "./bible.js";
 import { initBookmarkView } from "./bookmark.js";
 import { initSearchView } from "./search.js";
-import { initNoteView } from "./note.js";
+import { initNoteView, showNoteFor } from "./note.js";
 import { loadHistory } from "./store.js";
 
-const { viewContainer, viewBody, viewMenu, viewTitle, sidebar, selectorOT, selectorNT } = dom;
+const { viewContainer, viewRoot, viewBody, viewMenu, viewTitle, sidebar, selectorOT, selectorNT } = dom;
 
 // ============================
 // STATE
@@ -67,23 +67,19 @@ async function loadView(page) {
 function initView(page) {
     switch (page) {
         case "bible":
-            initBibleView(viewContainer);
-            setPageTitle(`${appState.currentBook.name} ${appState.currentChapter}`);
+            initBibleView(viewRoot);
             break;
 
         case "search":
-            initSearchView(viewContainer);
-            setPageTitle();
+            initSearchView(viewRoot);
             break;
 
         case "note":
-            initNoteView(viewContainer);
-            setPageTitle();
+            initNoteView(viewRoot);
             break;
 
         case "home":
         default:
-            setPageTitle();
             break;
     }
 }
@@ -102,9 +98,9 @@ const actions = {
         e.preventDefault();
         collapseUI();
 
-        const page = (e.target.getAttribute("href")).replace(/^#/, "").trim();
+        const link = e.target.closest("[data-action]");
+        const page = (link.getAttribute("href") || "").replace(/^#/, "").trim();
 
-        initUI(page);
         if (page) navigate(page);
     },
 
@@ -114,11 +110,6 @@ const actions = {
     }
 };
 
-function initUI(page) {
-    if (page == "bible" && currentView == "bible") {
-        sidebar.classList.toggle("collapsed");
-    }
-}
 //
 // sidebar
 //
@@ -259,6 +250,12 @@ function registerEvents() {
             const bookId = Number(selChap.dataset.book);
             const book = bibleBooks.find(b => b.id === bookId);
             const chapter = Number(selChap.dataset.chapter);
+
+            if (currentView === "note") {
+                showNoteFor(book, chapter);
+                collapseUI();
+                return;
+            }
 
             setCurrentBook(book, chapter);
             document.dispatchEvent(new CustomEvent("go-to-bible"));

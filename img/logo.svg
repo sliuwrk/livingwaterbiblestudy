@@ -24,8 +24,4 @@
             Bible Study
         </text>
     </g>
-
-    <text id="brand-caption" x="55" y="20" font-family="Segoe UI, sans-serif" fill="#FFFFFF"
-        visibility="hidden">
-    </text>
 </svg>

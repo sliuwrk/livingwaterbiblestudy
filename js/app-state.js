@@ -20,10 +20,8 @@ export const appState = {
     verseRange: {start: null, end: null, highlight: 'reverse'},
 
     bibleViewSettings: {
-        mode: "single",
         showStrongNumbers: false,
-        compareVersions: ["unv", "esv", "kjv", "wcb", "ofm", "rcuv", "tcv2019"],
-        showVersionAbbrInCompare: true
+        compareVersions: ["unv", "esv", "kjv", "wcb", "ofm", "rcuv", "tcv2019"]
     }
 };
 
@@ -113,7 +111,6 @@ export function popBibleView(state) {
     if (book) {
         setCurrentBook(book, state.chapter);
         appState.version = state.version;
-        appState.bibleViewSettings.mode = state.mode || "single";
 
         document.dispatchEvent(new CustomEvent("go-to-bible"));
     }
@@ -125,8 +122,7 @@ export function pushStateBibleView() {
             page: "bible",
             bookId: appState.currentBook.id,
             chapter: appState.currentChapter,
-            version: appState.version,
-            mode: appState.bibleViewSettings.mode
+            version: appState.version
         },
         "",
         `#bible/${appState.currentBook.id}/${appState.currentChapter}/${appState.version}`
