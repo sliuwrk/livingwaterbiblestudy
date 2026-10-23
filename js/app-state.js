@@ -20,8 +20,7 @@ export const appState = {
     verseRange: {start: null, end: null, highlight: 'reverse'},
 
     bibleViewSettings: {
-        showStrongNumbers: false,
-        compareVersions: ["unv", "esv", "kjv", "wcb", "ofm", "rcuv", "tcv2019"]
+        compareVersions: ["unv", "esv", "kjv", "net", "wcb", "ofm", "rcuv", "tcv2019"]
     }
 };
 

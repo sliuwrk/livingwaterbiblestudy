@@ -217,8 +217,18 @@ function loadStrongVerses(sn, btn) {
 
 function renderKeyword(q) {
 
-    if (keywordCache.has(q)) {
-        viewBody.insertAdjacentHTML("beforeend", keywordCache.get(q));
+    if (appState.version === "net") {
+        viewBody.insertAdjacentHTML("beforeend", `
+            <div class="alert alert-warning mb-2">
+                NET API 不支持关键词搜索。请选择其他译本后重试；原文编号搜索仍可使用。
+            </div>
+        `);
+        return;
+    }
+
+    const cacheKey = `${appState.version}:${q}`;
+    if (keywordCache.has(cacheKey)) {
+        viewBody.insertAdjacentHTML("beforeend", keywordCache.get(cacheKey));
         return;
     }
 
@@ -264,7 +274,7 @@ function renderKeyword(q) {
                 </div>
             `;
 
-            keywordCache.set(q, html);
+            keywordCache.set(cacheKey, html);
             replacePlaceholder(placeholderId, html);
         })
         .catch(() => {

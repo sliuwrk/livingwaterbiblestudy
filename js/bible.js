@@ -32,8 +32,8 @@ function initBibleView(container) {
 function getDom() {
     return {
         verseBox: _viewContainer.querySelector("#verse-box"),
-        toggleStrong: document.getElementById("toggle-strong"),
         versionLabel: document.getElementById("currentVersionLabel"),
+        versionAttribution: _viewContainer.querySelector("#version-attribution"),
         audioPlayer: _viewContainer.querySelector("#audio-player")
     };
 }
@@ -70,10 +70,38 @@ function getCompareVersions() {
     return versions.length ? versions : [appState.version];
 }
 
-function fetchVersionRecords(book, cname, chapter, version) {
+async function fetchVersionRecords(book, cname, chapter, version) {
     const cached = getChapter(book, chapter, version);
     if (cached) {
-        return Promise.resolve(cached);
+        return cached;
+    }
+
+    if (version === "net") {
+        const bookName = book.ename === "songofsolomon"
+            ? "song of solomon"
+            : book.ename.replace(/^([1-3])/, "$1 ");
+        const params = new URLSearchParams({
+            passage: `${bookName} ${chapter}`,
+            type: "json"
+        });
+        const response = await fetch(`https://labs.bible.org/api/?${params}`);
+        if (!response.ok) {
+            throw new Error(`NET request failed: ${response.status}`);
+        }
+        const data = await response.json();
+        if (!Array.isArray(data) || !data.length || data.some(row =>
+            typeof row.text !== "string" ||
+            !Number.isInteger(Number(row.verse)) || Number(row.verse) < 1 ||
+            Number(row.chapter) !== Number(chapter)
+        )) {
+            throw new Error("Invalid NET chapter response");
+        }
+        const records = data.map(row => ({
+            sec: Number(row.verse),
+            bible_text: row.text
+        }));
+        addChapter(book, chapter, version, records);
+        return records;
     }
 
     const params = new URLSearchParams({
@@ -132,7 +160,7 @@ function bindAudioButton() {
 // ============================
 function renderVerses(records) {
     const html = records.map(v => `
-        <p class="verse-row" data-v="${v.sec}">
+        <p class="verse-row hide-strong" data-v="${v.sec}">
             <sup class="verse-num" data-v="${v.sec}">${v.sec}</sup>
             ${convertFhlTags(v.bible_text)}
         </p>
@@ -197,21 +225,12 @@ function restoreHighlights() {
 function updateLabels() {
     view.versionLabel.textContent = bibleVersions[appState.version.toUpperCase()];
 
-    const canUseStrong = appState.version === "unv";
-
-    if (canUseStrong) {
-        view.audioPlayer.classList.remove("d-none");
-        view.toggleStrong.classList.remove("d-none");
-    } else {
-        view.audioPlayer.classList.add("d-none");
-        view.toggleStrong.classList.add("d-none");
-    }
-
-    appState.bibleViewSettings.showStrongNumbers = canUseStrong
-        ? appState.bibleViewSettings.showStrongNumbers
-        : false;
-
-    view.verseBox.classList.toggle("hide-strong", !appState.bibleViewSettings.showStrongNumbers);
+    view.audioPlayer.classList.toggle("d-none", appState.version !== "unv");
+    view.versionAttribution.innerHTML = appState.version === "net"
+        ? `NET Bible: <a href="https://netbible.com/" target="_blank" rel="noopener">New English Translation</a>,
+            provided by <a href="https://labs.bible.org/api_web_service" target="_blank" rel="noopener">bible.org</a>.`
+        : `${bibleVersions[appState.version.toUpperCase()]}:
+            经文来源：<a href="https://bible.fhl.net/" target="_blank" rel="noopener">信望愛聖經工具 (FHL)</a>。`;
 }
 
 // ============================
@@ -295,8 +314,10 @@ function toggleInlineCompare(verseNum) {
     const chapter = appState.currentChapter;
     const cname = appState.currentBook.cname;
     const book = booksByCname[cname];
-    const others = getCompareVersions().filter(v => v !== appState.version);
-    const versions = others.length ? others : getCompareVersions();
+    const versions = [
+        "unv",
+        ...getCompareVersions().filter(v => v !== "unv" && v !== appState.version)
+    ];
 
     const panel = document.createElement("div");
     panel.className = "verse-inline-compare small border-start border-2 ps-3 py-1 mb-2 ms-2";
@@ -304,7 +325,7 @@ function toggleInlineCompare(verseNum) {
     panel.innerHTML = `<p class="mb-0 text-body-secondary">加载中...</p>`;
     row.after(panel);
 
-    Promise.all(
+    Promise.allSettled(
         versions.map(version =>
             fetchVersionRecords(book, cname, chapter, version)
                 .then(records => ({ version, row: records.find(r => Number(r.sec) === verse) }))
@@ -312,13 +333,19 @@ function toggleInlineCompare(verseNum) {
     )
         .then(results => {
             panel.innerHTML = results
-                .filter(item => item.row)
-                .map(item => `
+                .map((result, index) => {
+                    if (result.status === "rejected") {
+                        return `<p class="mb-1 text-danger">${versions[index].toUpperCase()} 加载失败</p>`;
+                    }
+                    const item = result.value;
+                    if (!item.row) return "";
+                    return `
                     <div class="mb-1">
                         <a class="small text-secondary fw-semibold me-2 compare-version-link" data-compare-version="${item.version}">${item.version.toUpperCase()}</a>
                         <span>${parseCrossRefs(convertFhlTags(item.row.bible_text))}</span>
                     </div>
-                `).join("") || `<p class="mb-0 text-body-secondary">无对照经文</p>`;
+                `;
+                }).join("") || `<p class="mb-0 text-body-secondary">无对照经文</p>`;
         })
         .catch(() => {
             panel.innerHTML = `<p class="mb-0 text-body-secondary">加载失败</p>`;
@@ -420,12 +447,6 @@ function registerEvents() {
                 return;
             }
 
-            // STRONG TOGGLE
-            if (clickTarget.closest("#toggle-strong")) {
-                appState.bibleViewSettings.showStrongNumbers = !appState.bibleViewSettings.showStrongNumbers;
-                view.verseBox.classList.toggle("hide-strong", !appState.bibleViewSettings.showStrongNumbers);
-                return;
-            }
         });
     }
 }

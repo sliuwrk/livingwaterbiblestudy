@@ -123,8 +123,7 @@ function showTab(tab) {
 //
 function updateNoteTitle() {
     const { book, chapter } = getNoteInfo();
-    // the "查经资料" prefix is hidden on small screens to leave room for the pills
-    setViewTitle(`<span class="d-none d-md-inline">查经资料 </span><small>${book.name} 第 ${chapter} 章</small>`);
+    setViewTitle(`<span>${book.name}</span> <small>第 ${chapter} 章</small>`);
 }
 
 function updatePinButton() {

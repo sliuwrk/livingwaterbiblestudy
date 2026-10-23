@@ -40,7 +40,7 @@ async function loadView(page) {
 
     currentView = page;
 
-    const html = await fetch(`/views/${page}.html?v=1.0`).then(r => r.text());
+    const html = await fetch(`/views/${page}.html?v=20261023.1312`).then(r => r.text());
 
     const vw = document.createElement("div");
     vw.innerHTML = html;
@@ -177,11 +177,6 @@ function collapseUI() {
 
     sidebar.classList.add("collapsed");
 
-    const bsMenu = document.querySelector(".navbar-collapse.show");
-    if (bsMenu) {
-        const inst = bootstrap.Collapse.getInstance(bsMenu);
-        if (inst) inst.hide();
-    }
 }
 
 function registerEvents() {

@@ -32,6 +32,7 @@ class TTSPlayer {
 
             case "ESV":
             case "KJV":
+            case "NET":
                 return "en-US";
 
             default:

@@ -112,6 +112,7 @@ export const bibleVersions = {
     UNV: "和合本",
     ESV: "ESV",
     KJV: "KJV",
+    NET: "NET",
     WCB: "环球译本",
     OFM: "思高译本",
     RCUV: "和合本2010",
