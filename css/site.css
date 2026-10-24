@@ -79,11 +79,27 @@ body {
 }
 
 #sidebar-col {
-    position: sticky;
-    top: 70px;      
+    position: fixed;
+    top: 56px;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
     height: calc(100vh - 70px);
+    max-height: 80vh;
+    z-index: 1050;
     overflow-y: auto;
-    background-color: var(--bs-light);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background-color: var(--tabernacle-blue-bg) !important;
+    border-bottom: 3px solid var(--tabernacle-gold);
+    transition: max-height .3s ease;
+}
+
+#sidebar-col.collapsed {
+    max-height: 0;
+    border-bottom: none;
+    overflow: hidden;
+    pointer-events: none;
 }
 
 
@@ -126,41 +142,6 @@ footer {
     background-repeat:no-repeat;
     background-position:center;
     background-size:contain;
-}
-
-@media (max-width: 767.98px) {
-    #sidebar-col {
-        position: fixed;
-        top: 56px;
-        /* navbar height */
-        left: 0;
-        width: 100vw;
-        max-height: 80vh;
-        z-index: 1050;
-        overflow-y: auto;
-        /* Firefox */
-        scrollbar-width: none;
-        /* IE/old Edge */
-        -ms-overflow-style: none;
-
-        background-color: var(--tabernacle-blue-bg) !important;
-        border-bottom: 3px solid var(--tabernacle-gold);
-        transition: max-height .3s ease
-    }
-
-    #sidebar-col.collapsed {
-        max-height: 0;
-        border-bottom: none;
-        overflow: hidden;
-        pointer-events: none
-    }
-}
-
-/* Desktop */
-@media (min-width: 768px) {
-    #sidebar-col.collapsed {
-        display: none;
-    }
 }
 
 #sidebar-col.collapsed~#content-col {
@@ -282,9 +263,48 @@ footer {
     cursor: pointer;
 }
 
+#history-box,
+#highlight-box {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: 1.5rem;
+    align-content: start;
+}
+
+#history-box > p,
+#highlight-box > p {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 767.98px) {
+    #history-box,
+    #highlight-box {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 479.98px) {
+    #history-box,
+    #highlight-box {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 #history-box .list-group-item,
 #highlight-box .list-group-item {
     background-color: transparent;
+    min-width: 0;
+}
+
+#history-box .history-link,
+#highlight-box .bookmark-link {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+#history-box .delete-history,
+#highlight-box .delete-bookmark {
+    flex-shrink: 0;
 }
 
 #highlight-box i,

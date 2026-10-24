@@ -62,7 +62,7 @@ body.app-navbar-hidden .app-navbar {
 #view-title {
     cursor: pointer;
     user-select: none;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     align-self: stretch; /* same height as the button group */
     display: flex;
     align-items: center;

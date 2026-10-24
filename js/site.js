@@ -15,6 +15,7 @@ const { viewContainer, viewRoot, viewBody, viewMenu, viewTitle, sidebar, selecto
 // STATE
 // ============================
 let currentView = "";
+const desktopSidebar = window.matchMedia("(min-width: 768px)");
 
 // ============================
 // VIEW functions
@@ -106,6 +107,7 @@ const actions = {
 
     "toggle-sidebar": (e) => {
         e.preventDefault();
+        if (desktopSidebar.matches) return;
         sidebar.classList.toggle("collapsed");
     }
 };
@@ -172,14 +174,34 @@ function createBookBlock(book) {
 // helpers
 // 
 function collapseUI() {
-    // collapse only on mobile
-    if (window.innerWidth > 768) return;
-
     sidebar.classList.add("collapsed");
 
 }
 
 function registerEvents() {
+    let sidebarCloseTimer;
+
+    [viewTitle, sidebar].forEach(element => {
+        element.addEventListener("pointerenter", (e) => {
+            if (!desktopSidebar.matches || e.pointerType !== "mouse") return;
+            window.clearTimeout(sidebarCloseTimer);
+            sidebar.classList.remove("collapsed");
+        });
+
+        element.addEventListener("pointerleave", (e) => {
+            if (!desktopSidebar.matches || e.pointerType !== "mouse") return;
+            window.clearTimeout(sidebarCloseTimer);
+            sidebarCloseTimer = window.setTimeout(() => {
+                if (desktopSidebar.matches) collapseUI();
+            }, 180);
+        });
+    });
+
+    desktopSidebar.addEventListener("change", () => {
+        window.clearTimeout(sidebarCloseTimer);
+        collapseUI();
+    });
+
     // 
     // BIND NAVBAR ACTIONS
     // 
