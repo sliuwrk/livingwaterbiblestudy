@@ -5,8 +5,8 @@
     --bs-primary: var(--tabernacle-gold);
     --bs-primary-rgb: 212, 175, 55;
 
-    --bs-secondary: var(--tabernacle-blue);
-    --bs-secondary-rgb: 76, 111, 234;
+    --bs-secondary: var(--tabernacle-blue-fg);
+    --bs-secondary-rgb: 159, 177, 255;
 
     /* Light background (cards) */
     --bs-light: #2A2540;
@@ -27,8 +27,8 @@
     --bs-heading-color: var(--tabernacle-gold);
     --bs-heading-color-rgb: 212, 175, 55;
     
-    /* used by table caption */
-    --bs-secondary-color: #5C6275;
+    --bs-secondary-color: #B8B6C4;
+    --bs-secondary-color-rgb: 184, 182, 196;
 
      /* Borders --bs-border-color: #6B2F8A;*/
     --bs-border-color: #5C6275;
@@ -37,6 +37,7 @@
     --tabernacle-gold-fg-muted: #C1A45A;
     --tabernacle-gold-bg: #3A2F14;
     --tabernacle-blue: #4C6FEA;
+    --tabernacle-blue-fg: #9FB1FF;
     --tabernacle-blue-bg: #1E3A8A;
     --tabernacle-scarlet: #C53030;
     --tabernacle-scarlet-bg: #5A1A1A;
@@ -378,7 +379,7 @@ mark.hl-keyword {
 
 .btn-outline-secondary:hover {
     color: #fff;
-    background-color: var(--bs-secondary);
+    background-color: var(--tabernacle-blue-bg);
     border-color: var(--bs-body-color);
 }
 
