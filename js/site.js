@@ -21,6 +21,8 @@ const desktopSidebar = window.matchMedia("(min-width: 768px)");
 // VIEW functions
 // ============================
 const scrollPositions = {};
+const viewTemplates = new Map();
+let viewLoadId = 0;
 
 function navigate(page) {
     if (page != currentView) {
@@ -32,6 +34,7 @@ function navigate(page) {
 
 // LOAD VIEW (CORE SPA)
 async function loadView(page) {
+    const loadId = ++viewLoadId;
     if (page === currentView && page !== "bible") return;
 
     // save outgoing view scroll position
@@ -39,9 +42,23 @@ async function loadView(page) {
         scrollPositions[currentView] = window.scrollY;
     }
 
-    currentView = page;
+    if (!viewTemplates.has(page)) {
+        const template = fetch(`/views/${page}.html?v=20261023.1312`)
+            .then(response => {
+                if (!response.ok) throw new Error(`View request failed: ${response.status}`);
+                return response.text();
+            })
+            .catch(error => {
+                viewTemplates.delete(page);
+                throw error;
+            });
+        viewTemplates.set(page, template);
+    }
 
-    const html = await fetch(`/views/${page}.html?v=20261023.1312`).then(r => r.text());
+    const html = await viewTemplates.get(page);
+    if (loadId !== viewLoadId) return;
+
+    currentView = page;
 
     const vw = document.createElement("div");
     vw.innerHTML = html;
