@@ -46,6 +46,7 @@
 
     --bg-active: #d4af3738;
     --bg-active-secondary: #5C6275;
+    --menu-width: 320px;
 }
 
 html, body {
@@ -103,6 +104,45 @@ body {
     pointer-events: none;
 }
 
+/* left menu: bookmarks / history / settings, toggled by the navbar brand */
+#menu-col {
+    position: fixed;
+    top: 56px;
+    bottom: 0;
+    left: 0;
+    width: var(--menu-width);
+    max-width: 85vw;
+    z-index: 1050;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    background-color: var(--tabernacle-blue-bg) !important;
+    border-right: 3px solid var(--tabernacle-gold);
+    transition: transform .3s ease, visibility .3s;
+}
+
+#menu-col.collapsed {
+    transform: translateX(-100%);
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* desktop: the menu pushes the content, and the bible panel drops down beside it */
+@media (min-width: 768px) {
+    #content-col {
+        transition: margin-left .3s ease;
+    }
+
+    #menu-col:not(.collapsed) ~ #content-col {
+        margin-left: var(--menu-width);
+    }
+
+    #menu-col:not(.collapsed) ~ #sidebar-col {
+        left: var(--menu-width);
+        width: calc(100vw - var(--menu-width));
+        max-width: none;
+    }
+}
+
 
 /* content column stretches */
 #content-col {
@@ -150,19 +190,28 @@ footer {
     max-width: 100%;
 }
 
-#sidebarTabs .nav-link:hover {
+#menuTabs {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--tabernacle-blue-bg);
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+#menuTabs .nav-link:hover {
     background-color: var(--bs-link-hover-color);
 }
 
-#sidebarTabs .nav-link.active {
+#menuTabs .nav-link.active {
     background: transparent;
 }
 
-#sidebarTabs .nav-link.active i {
+#menuTabs .nav-link.active i {
     color: var(--bs-primary);
 }
 
-#sidebar-col .list-group {
+#sidebar-col .list-group,
+#menu-col .list-group {
     background: transparent;
     border: none;
 }
@@ -267,28 +316,13 @@ footer {
 #history-box,
 #highlight-box {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    column-gap: 1.5rem;
+    grid-template-columns: minmax(0, 1fr);
     align-content: start;
 }
 
 #history-box > p,
 #highlight-box > p {
     grid-column: 1 / -1;
-}
-
-@media (max-width: 767.98px) {
-    #history-box,
-    #highlight-box {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 479.98px) {
-    #history-box,
-    #highlight-box {
-        grid-template-columns: minmax(0, 1fr);
-    }
 }
 
 #history-box .list-group-item,

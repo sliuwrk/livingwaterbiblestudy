@@ -9,7 +9,7 @@ import { initSearchView } from "./search.js";
 import { initNoteView, showNoteFor } from "./note.js";
 import { loadHistory } from "./store.js";
 
-const { viewContainer, viewRoot, viewBody, viewMenu, viewTitle, sidebar, selectorOT, selectorNT } = dom;
+const { viewContainer, viewRoot, viewBody, viewMenu, viewTitle, sidebar, menu, selectorOT, selectorNT } = dom;
 
 // ============================
 // STATE
@@ -126,6 +126,15 @@ const actions = {
         e.preventDefault();
         if (desktopSidebar.matches) return;
         sidebar.classList.toggle("collapsed");
+        // on mobile both panels overlay the content, so show one at a time
+        if (!sidebar.classList.contains("collapsed")) setMenuOpen(false);
+    },
+
+    "toggle-menu": (e) => {
+        e.preventDefault();
+        const open = menu.classList.contains("collapsed");
+        setMenuOpen(open);
+        if (open && !desktopSidebar.matches) sidebar.classList.add("collapsed");
     }
 };
 
@@ -192,7 +201,13 @@ function createBookBlock(book) {
 // 
 function collapseUI() {
     sidebar.classList.add("collapsed");
+    // on desktop the menu stays pinned beside the content until the brand is clicked
+    if (!desktopSidebar.matches) setMenuOpen(false);
+}
 
+function setMenuOpen(open) {
+    menu.classList.toggle("collapsed", !open);
+    document.querySelector(".navbar-brand").setAttribute("aria-expanded", String(open));
 }
 
 function registerEvents() {

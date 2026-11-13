@@ -37,8 +37,16 @@ body.app-navbar-hidden .app-navbar {
     background-color: var(--bs-body-bg);
 }
 
-#sidebar-col {
+#sidebar-col,
+#menu-col {
     top: var(--app-header-height, 70px);
+}
+
+#menu-col {
+    height: calc(100vh - var(--app-header-height, 70px));
+}
+
+#sidebar-col {
     height: calc(100vh - var(--app-header-height, 70px));
 }
 
@@ -47,8 +55,12 @@ body.app-navbar-hidden .app-navbar {
         --app-navbar-height: 56px;
     }
 
-    #sidebar-col {
+    #sidebar-col,
+    #menu-col {
         top: var(--app-header-height, 56px);
+    }
+
+    #sidebar-col {
         height: auto;
     }
 }

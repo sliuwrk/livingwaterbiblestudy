@@ -4,6 +4,7 @@ import { appState, getXrefs  } from "./app-state.js"
 
 export const dom = {
     sidebar: document.getElementById("sidebar-col"),
+    menu: document.getElementById("menu-col"),
     viewContainer: document.getElementById("content-col"),
     // view menus live in #app-header, outside #content-col
     viewRoot: document.body,
