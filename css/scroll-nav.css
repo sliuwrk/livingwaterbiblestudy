@@ -42,12 +42,29 @@ body.app-navbar-hidden .app-navbar {
     top: var(--app-header-height, 70px);
 }
 
-#menu-col {
+#sidebar-col {
     height: calc(100vh - var(--app-header-height, 70px));
 }
 
-#sidebar-col {
-    height: calc(100vh - var(--app-header-height, 70px));
+/* desktop: the menu starts right under the top navbar, beside the view navbar */
+@media (min-width: 768px) {
+    #menu-col {
+        top: var(--app-navbar-height, 70px);
+        transition: transform .3s ease, visibility .3s, top .2s ease-in-out;
+    }
+
+    body.app-navbar-hidden #menu-col {
+        top: 0;
+    }
+
+    #content-navbar {
+        transition: margin-left .3s ease;
+    }
+
+    body.menu-open #content-navbar {
+        width: auto;
+        margin-left: var(--menu-width);
+    }
 }
 
 @media (max-width: 767.98px) {

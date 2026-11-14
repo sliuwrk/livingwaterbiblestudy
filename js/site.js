@@ -207,6 +207,7 @@ function collapseUI() {
 
 function setMenuOpen(open) {
     menu.classList.toggle("collapsed", !open);
+    document.body.classList.toggle("menu-open", open);
     document.querySelector(".navbar-brand").setAttribute("aria-expanded", String(open));
 }
 
